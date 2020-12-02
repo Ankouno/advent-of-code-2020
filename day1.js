@@ -1,13 +1,13 @@
 const fs = require('fs');
 const _ = require('lodash');
 
-const input = fs.readFileSync('day1.txt');
+const input = fs.readFileSync('input-files/day1.txt');
 const values = _.split(input, '\n').map(_.toSafeInteger);
 
 const firstSolution = () => {
 	for (let i = 0; i < values.length - 1; i++) {
 		const num1 = values[i];
-
+		
 		for (let j = i + 1; j < values.length; j++) {
 			const num2 = values[j];
 
