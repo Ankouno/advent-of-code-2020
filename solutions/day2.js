@@ -1,7 +1,7 @@
 const fs = require('fs');
 const _ = require('lodash');
 
-const input = fs.readFileSync('input-files/day2.txt');
+const input = fs.readFileSync('inputs/day2.txt');
 const lines = _.split(input, '\n');
 
 const rgx = /(\d+)-(\d+) (\w): (\w+)/;

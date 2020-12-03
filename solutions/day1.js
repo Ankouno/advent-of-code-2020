@@ -1,7 +1,7 @@
 const fs = require('fs');
 const _ = require('lodash');
 
-const input = fs.readFileSync('input-files/day1.txt');
+const input = fs.readFileSync('inputs/day1.txt');
 const values = _.split(input, '\n').map(_.toSafeInteger);
 
 const firstSolution = () => {
