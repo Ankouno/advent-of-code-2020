@@ -6,7 +6,8 @@
     "day1": "node solutions/day1.js",
     "day2": "node solutions/day2.js",
     "day3": "node solutions/day3.js",
-	"all": "for %f in (solutions/*) do node solutions/%f"
+    "day4": "node solutions/day4.js",
+	  "all": "for %f in (solutions/*) do node solutions/%f"
   },
   "repository": {
     "type": "git",
