@@ -10,39 +10,53 @@ const passports =
       return pass;
     }, {}));
 
+const isInRange = (value, min, max) => value >= min && value <= max;
+
+const isFieldValid = (key, value) => {
+  if (_.isNil(value))
+    return false;
+
+  switch(key) {
+    case 'byr':
+      return isInRange(value, 1920, 2002);
+    case 'iyr':
+      return isInRange(value, 2010, 2020);
+    case 'eyr':
+      return isInRange(value, 2020, 2030);
+    case 'hgt':
+      const heightInfo = value.match(/^(\d+)(cm|in)$/);
+      if (heightInfo) {
+        const [, height, format] = heightInfo;
+        return format == "cm" ? isInRange(height, 150, 193) : isInRange(height, 59, 76);
+      }
+      return false;
+    case 'hcl':
+      return value.match(/^#[0-9a-f]{6}$/);
+    case 'ecl':
+      return ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"].indexOf(value) != -1;
+    case 'pid':
+      return value.match(/^\d{9}$/);
+  }
+}
+
+const reqFields = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid" /*, "cid" */];
+
 const firstSolution = () => {
-  const reqFields = ["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid" /*, "cid" */];
   let validCnt = 0;
   for (let i = 0; i < passports.length; i++) {
-    const pass = passports[i];
-    if (_.intersection(Object.keys(pass), reqFields).length == reqFields.length)
+    const passport = passports[i];
+    if (_.every(reqFields, (fld) => _.has(passport, fld)))
       validCnt++;
   }
   return validCnt;
 }
 
 const secondSolution = () => {
-  const validEcl = ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"];
   let validCnt = 0;
   for (let i = 0; i < passports.length; i++) {
-    const pass = passports[i];
-    const heightInfo = pass.hgt?.match(/^(\d+)(cm|in)$/);
-    if (heightInfo) {
-      const [, hgt, hgtFormat] = heightInfo;
-
-      const isValid =
-        (pass.byr >= 1920 && pass.byr <= 2002) &&
-        (pass.iyr >= 2010 && pass.iyr <= 2020) &&
-        (pass.eyr >= 2020 && pass.eyr <= 2030) &&
-        (hgtFormat == "cm" ? (hgt >= 150 && hgt <= 193)
-                           : (hgt >= 59 && hgt <= 76)) &&
-        (pass.hcl?.match(/^#[0-9a-f]{6}$/)) &&
-        (validEcl.indexOf(pass.ecl) != -1) &&
-        (pass.pid?.match(/^\d{9}$/));
-        
-      if (isValid)
-        validCnt++;
-    }
+    const passport = passports[i];
+    if (_.every(reqFields, (fld) => isFieldValid(fld, passport[fld])))
+      validCnt++;
   }
   return validCnt;
 }
