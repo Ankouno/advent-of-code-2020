@@ -1,5 +1,4 @@
 const fs = require('fs');
-const { uniq } = require('lodash');
 const _ = require('lodash');
 
 const input = fs.readFileSync('inputs/day6.txt');
