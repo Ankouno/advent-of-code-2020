@@ -9,6 +9,8 @@
     "day4": "node solutions/day4.js",
     "day5": "node solutions/day5.js",
     "day6": "node solutions/day6.js",
+    "day7": "node solutions/day7.js",
+    "day8": "node solutions/day8.js",
 	  "all": "for %f in (solutions/*) do node solutions/%f"
   },
   "repository": {
