@@ -5,7 +5,17 @@ const input = fs.readFileSync('inputs/day11.txt');
 const initMap = _.compact(_.split(input, '\n')).map((row) => row.split(''));
 const height = initMap.length; width = initMap[0].length;
 
-const iterateMap = (map, callback) => {
+const adjacentIterator = [
+  [-1, -1], [0, -1], [1, -1],
+  [-1, 0],           [1, 0],
+  [-1, 1],  [0, 1],  [1, 1]
+]
+
+const makeNewMap = () => {
+  return new Array(initMap.length).fill(0).map(() => []);
+}
+
+const iterateMap = (callback) => {
   for (let x = 0; x < width; x++) {
     for (let y = 0; y < height; y++) {
       callback(x, y);
@@ -13,27 +23,19 @@ const iterateMap = (map, callback) => {
   }
 }
 
-const updateMap = (updater) => {
-  const newMap = new Array(initMap.length).fill(0).map(() => []);
-  iterateMap(newMap, (x, y) => updater(x, y, newMap));
-  return newMap;
-}
-
 const countTotalOccupied = (map) => {
   let occupiedCount = 0;
-  iterateMap(map, (x, y) => map[y][x] == '#' && occupiedCount++)
+  iterateMap((x, y) => map[y][x] == '#' && occupiedCount++)
   return occupiedCount;
 }
 
 const countAdjacentOccupied = (x, y, map) => {
   let occupiedCount = 0;
-  for (let xi = x - 1; xi <= x + 1; xi++) {
-    for (let yi = y - 1; yi <= y + 1; yi++) {
-      if ((xi != x || yi != y) && map[yi] && map[yi][xi] == '#') {
-        occupiedCount++;
-      }
+  adjacentIterator.forEach(([xi, yi]) => {
+    if (map[y-yi] && map[y-yi][x-xi] == '#'){
+      occupiedCount++;
     }
-  }
+  });
   return occupiedCount;
 }
 
@@ -58,7 +60,9 @@ const firstSolution = () => {
   let map = initMap;
   for (;;) {
     let updateCount = 0;
-    map = updateMap((x, y, newMap) => updateTileAdjacent(x, y, map, newMap) && updateCount++);
+    const newMap = makeNewMap();
+    iterateMap((x, y) => updateTileAdjacent(x, y, map, newMap) && updateCount++);
+    map = newMap;
     if (updateCount == 0) {
       break;
     }
@@ -69,27 +73,23 @@ const firstSolution = () => {
 //-----------------------------------------------------------------------------
 const countLineOfSightOccupied = (x, y, map) => {
   let occupiedCount = 0;
-  for (let i = -1; i <= 1; i++) {
-    for (let j = -1; j <= 1; j++) {
-      if (i == 0 && j == 0) {
-        continue;
-      }
-
-      // find first seat in direction
-      let xi = x, yj = y;
-      for (;;) {
-        xi += i; yj += j;
-        if (xi < 0 || xi >= width || yj < 0 || yj >= height) {
-          break;
-        } else if (map[yj][xi] != '.') {
-          if (map[yj][xi] == '#') {
-            occupiedCount++;
-          }
-          break;
+  adjacentIterator.forEach(([xi, yi]) => {
+    // find first seat in direction
+    let stepX = x, stepY = y;
+    for (;;) {
+      stepX += xi; stepY += yi
+      if (stepX < 0 || stepX >= width || stepY < 0 || stepY >= height) {
+        // out of bounds
+        break;
+      } else if (map[stepY][stepX] != '.') {
+        if (map[stepY][stepX] == '#') {
+          occupiedCount++;
         }
+        break;
       }
     }
-  }
+  })
+
   return occupiedCount;
 }
 
@@ -114,7 +114,9 @@ const secondSolution = () => {
   let map = initMap;
   for (;;) {
     let updateCount = 0;
-    map = updateMap((x, y, newMap) => updateTileLine(x, y, map, newMap) && updateCount++);
+    const newMap = makeNewMap();
+    iterateMap((x, y) => updateTileLine(x, y, map, newMap) && updateCount++);
+    map = newMap;
     if (updateCount == 0) {
       break;
     }
