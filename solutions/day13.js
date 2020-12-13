@@ -3,9 +3,12 @@ const _ = require('lodash');
 
 const input = fs.readFileSync('inputs/day13.txt');
 let [startTime, idList] = _.split(input, '\n');
+startTime = parseInt(startTime);
 idList = idList.split(",").map((id) => id == 'x' ? id : parseInt(id));
 
 const mod = (n, m) => ((n % m) + m) % m; // mod handling negative numbers
+const gcd = (a, b) => b == 0 ? a : gcd(b, a % b);
+
 const inverseMod = (n, m) => { // inverse, assuming coprime and inverse exists
   const params = {};
   return gcdExtended(n, m, params)[0];
@@ -18,7 +21,6 @@ const gcdExtended = (a, b) => {
 }
 
 const firstSolution = () => {
-  startTime = parseInt(startTime);
   let minBus, minWait = Number.MAX_VALUE;
   for (let i = 0; i < idList.length; i++) {
     const id = idList[i];
@@ -34,25 +36,16 @@ const firstSolution = () => {
 }
 
 const secondSolution = () => {
-  // using chinese remainder theorem
-  const aList = [], mList = [], MList = [], yList = [];
-  idList.forEach((id, i) => {
-    if (id != 'x') aList.push(BigInt(id - i)), mList.push(BigInt(id));
-  })
+  const rows = idList.reduce((a, id, i) => {
+    if (id != 'x') a.push({a: BigInt(id - i), m: BigInt(id)})
+    return a;
+  }, []);
 
-  const m = mList.reduce((m, mi) => m * mi, 1n);
-  for (let i = 0; i < mList.length; i++) {
-    const M = m / mList[i];
-    const y = inverseMod(M, mList[i]);
-    MList.push(M);
-    yList.push(y);
-  }
-  
-  let x = 0n;
-  for (let i = 0; i < aList.length; i++) {
-    x += aList[i] * MList[i] * yList[i];
-  }
-  return mod(x, m);
+  const m = rows.reduce((m, row) => m * row.m, 1n);
+  return rows.reduce((time, row) => {
+    const M = m / row.m;
+    return mod(time + row.a * inverseMod(M, row.m) * M, m);
+  }, 0n)
 }
 
 console.log("==[Day 13]========")
