@@ -7,8 +7,6 @@ startTime = parseInt(startTime);
 idList = idList.split(",").map((id) => id == 'x' ? id : parseInt(id));
 
 const mod = (n, m) => ((n % m) + m) % m; // mod handling negative numbers
-const gcd = (a, b) => b == 0 ? a : gcd(b, a % b);
-
 const inverseMod = (n, m) => { // inverse, assuming coprime and inverse exists
   const params = {};
   return gcdExtended(n, m, params)[0];
