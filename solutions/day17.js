@@ -1,103 +1,72 @@
 const fs = require('fs');
-const _ = require('lodash');
-const input = fs.readFileSync('inputs/day17.txt', 'utf-8');
+const input = fs.readFileSync('inputs/day17.txt', 'utf-8').split('\n').map((row) => row.split(''));
 
-// this is a super unoptimized approach but, oh well!
+const posToString = (x, y, z, w) => x + "," + y + "," + z + "," + w;
+const getState = (grid, x, y, z, w) => grid.get(posToString(x, y, z, w));
+const setActive = (grid, x, y, z, w) => grid.set(posToString(x, y, z, w), true);
 
-class Point {
-  constructor(x = 0, y = 0, z = 0, w = 0) {
-    this.pos = _.isArray(x) ? x : [x, y, z, w];
-  }
+const initGrid = new Map();
+input.forEach((row, y) => row.forEach((c, x) => (c == '#') && setActive(initGrid, x, y, 0, 0)));
 
-  x = () => this.pos[0];
-  y = () => this.pos[1];
-  z = () => this.pos[2];
-  w = () => this.pos[3];
-
-  isRegistered = (states) => states.has(this.toString());
-  isActive = (states) => states.get(this.toString());
-  setState = (states, newState) => states.set(this.toString(), newState);
-  
-  neighbors = (use4D) => {
-    const list = [];
-    for (let xi = -1; xi <= 1; xi++) {
-      for (let yi = -1; yi <= 1; yi++) {
-        for (let zi = -1; zi <= 1; zi++) {
-          if (use4D) {
-            for (let wi = -1; wi <= 1; wi++) {
-              if (xi == 0 && yi == 0 && zi == 0 && wi == 0) continue;
-              list.push(this.add(xi, yi, zi, wi));
-            }
-          } else {
-            if (xi == 0 && yi == 0 && zi == 0) continue;
-            list.push(this.add(xi, yi, zi, 0));
+const countActiveNeighbors = (grid, x, y, z, w, use4D) => {
+  let count = 0;
+  for (let wi = (use4D ? w - 1 : 0); wi <= (use4D ? w + 1 : 0); wi++) {
+    for (let zi = z - 1; zi <= z + 1; zi++) {
+      for (let yi = y - 1; yi <= y + 1; yi++) {
+        for (let xi = x - 1; xi <= x + 1; xi++) {
+          if ((xi != x || yi != y || zi != z || wi != w) && getState(grid, xi, yi, zi, wi)) {
+            count++;
           }
         }
       }
     }
-    return list;
   }
-
-  add = (x, y, z, w) => new Point(this.x()+x, this.y()+y, this.z()+z, this.w()+w);
-  toString = () => String(this.pos);
+  return count;
 }
 
-const countActive = (list, cubes) => {
-  return list.reduce((a, n) => a + (n.isActive(cubes) ? 1 : 0), 0);
-}
+const iterateMap = (oldGrid, limits, use4D) => {
+  const newGrid = new Map();
+  limits[0][0]--; limits[0][1]++;
+  limits[1][0]--; limits[1][1]++;
+  limits[2][0]--; limits[2][1]++;
+  if (use4D) limits[3][0]--, limits[3][1]++;
 
-const initCubes = new Map();
-_.compact(input.split("\n"))
-  .forEach((row, y) => row.split("")
-    .forEach((c, x) => new Point(x, y, 0, 0).setState(initCubes, c == '#')));
-    
-    
-const updatePoint = (oldState, newState, p, use4D) => {
-  const neighbors = p.neighbors(use4D);
-  const activeNbCount = countActive(neighbors, oldState);
-  if (p.isActive(oldState)) {
-    !_.inRange(activeNbCount, 2, 4) && p.setState(newState, false);
-  } else {
-    activeNbCount == 3 && p.setState(newState, true);
-  }
-  return neighbors;
-}
-
-const updateState = (oldState, use4D) => {
-  const newState = _.clone(oldState);
-  oldState.forEach((v, k) => {
-    const p = new Point(k.split(",").map(_.parseInt));
-    neighbors = updatePoint(oldState, newState, p, use4D);
-
-    // check for unregistered neighbors
-    neighbors.forEach((n) => {
-      if (!n.isRegistered(newState)) {
-        updatePoint(oldState, newState, n, use4D);
+  for (let w = limits[3][0]; w < limits[3][1]; w++) {
+    for (let z = limits[2][0]; z < limits[2][1]; z++) {
+      for (let y = limits[1][0]; y < limits[1][1]; y++) {
+        for (let x = limits[0][0]; x < limits[0][1]; x++) {
+          const isActive = getState(oldGrid, x, y, z, w);
+          const activeNeighbors = countActiveNeighbors(oldGrid, x, y, z, w, use4D);
+          if (activeNeighbors == 3 || (isActive && activeNeighbors == 2)) {
+            setActive(newGrid, x, y, z, w);
+          }
+        }
       }
-    })
-  })
-  return newState;
+    }
+  }
+  return newGrid;
 }
 
-const firstSolution = () => {
-  let cubes = _.clone(initCubes);
+const getSixIterations = (use4D) => {
+  const limits = [
+    [0, input.length],    // x
+    [0, input[0].length], // y
+    [0, 1], // z
+    [0, 1]  // w
+  ];
+
+  let map = initGrid;
   for (let i = 0; i < 6; i++) {
-    cubes = updateState(cubes, false);
+    map = iterateMap(map, limits, use4D);
   }
-  let activeCount = 0;
-  cubes.forEach((isActive) => isActive && activeCount++);
-  return activeCount;
+  
+  let finalActive = 0;
+  map.forEach((isActive) => isActive && finalActive++);
+  return finalActive;
 }
 
-const secondSolution = () => {
-  let cubes = _.clone(initCubes);
-  for (let i = 0; i < 6; i++) {
-    cubes = updateState(cubes, true);
-  }
-  let activeCount = 0;
-  cubes.forEach((isActive) => isActive && activeCount++);
-  return activeCount;
-}
+const firstSolution = () => getSixIterations(false);
+const secondSolution = () => getSixIterations(true);
 
 console.log("==[Day 17]========")
 console.log("1) " + firstSolution());
