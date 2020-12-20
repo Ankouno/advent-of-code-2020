@@ -97,7 +97,9 @@ const firstSolution = () => {
 // search for monsters in the image
 const secondSolution = () => {
   const image = buildImage();
-  const monster = ['                  # ', '#    ##    ##    ###', ' #  #  #  #  #  #   '].map(x => x.split(''));
+  const monster = ['                  # ',
+                   '#    ##    ##    ###',
+                   ' #  #  #  #  #  #   '].map(x => x.split(''));
 
   for (pattern of getGroup(monster)) {
     let foundCount = 0;
