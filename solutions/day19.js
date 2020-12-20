@@ -1,5 +1,4 @@
 const fs = require('fs');
-const { result } = require('lodash');
 const _ = require('lodash');
 
 const input = fs.readFileSync('inputs/day19.txt', 'utf-8').split('\n\n');
