@@ -25,6 +25,7 @@
     "day20": "node solutions/day20.js",
     "day21": "node solutions/day21.js",
     "day22": "node solutions/day22.js",
+    "day23": "node solutions/day23.js",
     "all": "for %f in (solutions/*) do node solutions/%f"
   },
   "repository": {
