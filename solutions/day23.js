@@ -1,17 +1,7 @@
 const _ = require('lodash');
+const mod = (a, b) => ((a % b) + b) % b;
 
 const input = '137826495'.split('').map(_.toSafeInteger);
-
-const mod = (a, b) => ((a % b) + b) % b;
-const printOrder = (cups, next) => {
-  let out = '';
-  let n = cups[0];
-  for (let i = 0; i < cups.length; i++) {
-    out += n + ' ';
-    n = next[n];
-  }
-  console.log(out);
-}
 
 const moveCups = (inputLabels, moveCount, cupCount) => {
   cupCount = cupCount ?? inputLabels.length;
@@ -62,6 +52,6 @@ const secondSolution = () => {
   return next[1] * next[next[1]];
 }
 
-console.log("==[Day 22]=========")
+console.log("==[Day 23]=========")
 console.log("1) " + firstSolution());
 console.log("2) " + secondSolution());
